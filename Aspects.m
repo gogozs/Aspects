@@ -42,6 +42,7 @@ typedef struct _AspectBlock {
 @property (nonatomic, unsafe_unretained, readonly) id instance;
 @property (nonatomic, strong, readonly) NSArray *arguments;
 @property (nonatomic, strong, readonly) NSInvocation *originalInvocation;
+@property (nonatomic) BOOL allowOriginalInvocation;
 @end
 
 // Tracks a single aspect.
@@ -492,13 +493,15 @@ static void __ASPECTS_ARE_BEING_CALLED__(__unsafe_unretained NSObject *self, SEL
         aspect_invoke(classContainer.insteadAspects, info);
         aspect_invoke(objectContainer.insteadAspects, info);
     }else {
-        Class klass = object_getClass(invocation.target);
-        do {
-            if ((respondsToAlias = [klass instancesRespondToSelector:aliasSelector])) {
-                [invocation invoke];
-                break;
-            }
-        }while (!respondsToAlias && (klass = class_getSuperclass(klass)));
+        if ([info allowOriginalInvocation]) {
+            Class klass = object_getClass(invocation.target);
+            do {
+                if ((respondsToAlias = [klass instancesRespondToSelector:aliasSelector])) {
+                    [invocation invoke];
+                    break;
+                }
+            }while (!respondsToAlias && (klass = class_getSuperclass(klass)));
+        }
     }
 
     // After hooks.
@@ -930,6 +933,7 @@ static void aspect_deregisterTrackedSelector(id self, SEL selector) {
     if (self = [super init]) {
         _instance = instance;
         _originalInvocation = invocation;
+        _allowOriginalInvocation = YES;
     }
     return self;
 }

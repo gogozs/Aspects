@@ -20,9 +20,13 @@
     [self.window makeKeyAndVisible];
 
     // Ignore hooks when we are testing.
+    __block NSUInteger i = 0;
     if (!NSClassFromString(@"XCTestCase")) {
-        [aspectsController aspect_hookSelector:@selector(buttonPressed:) withOptions:0 usingBlock:^(id info, id sender) {
-            NSLog(@"Button was pressed by: %@", sender);
+        [aspectsController aspect_hookSelector:@selector(buttonPressed:) withOptions:AspectPositionBefore usingBlock:^(id<AspectInfo> info, id sender) {
+            BOOL enable = (++i % 2) == 0;
+
+            NSLog(@"Button was pressed by: %@, enable:%d", sender, enable);
+            info.allowOriginalInvocation = enable;
         } error:NULL];
 
         [aspectsController aspect_hookSelector:@selector(viewWillLayoutSubviews) withOptions:0 usingBlock:^{
