@@ -36,8 +36,6 @@ typedef NS_OPTIONS(NSUInteger, AspectOptions) {
 /// All method arguments, boxed. This is lazily evaluated.
 - (NSArray *)arguments;
 
-/// set to NO would not invoke originalInvocation, will effect all aspects. default is YES;
-@property (nonatomic) BOOL allowOriginalInvocation;
 @end
 
 /**
